@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fuellake"
+version = "1.0.0"
+description = "Medallion data lake and price forecasting platform for Brazilian fuel prices (ANP open data)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Lucas Hora" }]
+dependencies = [
+    "pandas>=2.2",
+    "pyarrow>=15",
+    "duckdb>=1.1",
+    "scikit-learn>=1.4",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "httpx>=0.27",
+    "joblib>=1.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.4"]
+
+[project.scripts]
+fuellake = "fuellake.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+fuellake = ["sql/*.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:Using `httpx` with `starlette.testclient`:Warning",
+]
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "B905"]
+"scripts/*" = ["E501"]
+"src/fuellake/silver.py" = ["E501"]  # embedded SQL
+"src/fuellake/report.py" = ["E501"]  # embedded HTML/CSS

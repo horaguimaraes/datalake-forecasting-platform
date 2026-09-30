@@ -1,0 +1,13 @@
+.venv
+data/lake
+data/demo_lake
+data/lake_*
+tests
+scripts
+powerbi
+.git
+.github
+.pytest_cache
+.ruff_cache
+**/__pycache__
+*.egg-info

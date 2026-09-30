@@ -1,0 +1,43 @@
+name: Refresh forecast (real ANP data)
+
+# Scheduled orchestration: every Tuesday, download whatever ANP published, rebuild the lake,
+# retrain, and publish the report and the quality report as build artifacts.
+# NOTE: this workflow has not been run in CI yet; run it manually once (Actions > Run workflow) to verify.
+
+on:
+  schedule:
+    - cron: "0 9 * * 2"
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "First month to load (YYYY-MM). Fewer months = faster."
+        default: "2024-01"
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e .
+      - name: Cache raw ANP files
+        uses: actions/cache@v4
+        with:
+          path: data/lake/bronze
+          key: bronze-${{ github.run_id }}
+          restore-keys: bronze-
+      - name: Run the pipeline
+        run: fuellake run --start "${{ github.event.inputs.start || '2024-01' }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forecast-outputs
+          path: |
+            data/lake/reports/
+            data/lake/forecasts/latest.parquet
+            data/lake/models/latest.json
+            data/lake/runs/
